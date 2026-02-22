@@ -1,6 +1,6 @@
 ## 13. Dependency Resolution
 
-Dependency resolution is a core differentiator of UAAPS over raw vendor plugin systems. Like npm, pip, or Cargo, the package manager must resolve a directed acyclic graph (DAG) of requirements before installation.
+Dependency resolution is a core differentiator of UAAPS over raw vendor plugin systems. Like npm, pip, or Cargo, the package manager MUST resolve a directed acyclic graph (DAG) of requirements before installation.
 
 ### 13.1 Dependency Types
 
@@ -8,7 +8,7 @@ Dependency resolution is a core differentiator of UAAPS over raw vendor plugin s
 |------|-------------|---------------------|-----------|
 | **Direct** | `dependencies` | **Yes** — install fails | Other agent packages this package requires to function. |
 | **Optional** | `optionalDependencies` | No — install succeeds | Enhances functionality if present. Graceful degradation if absent. |
-| **Peer** | `peerDependencies` | **Yes** — warn/fail | Must be provided by the host project or another top-level install. Not auto-installed. |
+| **Peer** | `peerDependencies` | **Yes** — warn/fail | MUST be provided by the host project or another top-level install. Not auto-installed. |
 | **System** | `systemDependencies` | **Yes** — pre-flight check | OS binaries, language runtimes, pip/npm packages, MCP servers. |
 
 ### 13.2 Version Constraint Syntax
@@ -304,3 +304,102 @@ For reproducible builds in CI environments:
 ```
 
 The `--frozen` flag ensures CI uses exactly the versions from `package.agent.lock`, failing if the lock file is out of date.
+
+### 13.13 Install Modes & Package Cache
+
+The `aam` CLI supports three install modes. The mode determines where resolved packages are written and whether a shared cache is consulted.
+
+#### Install Mode Overview
+
+| Mode | Install Location | Lock File Used | Typical Use |
+|------|-----------------|---------------|-------------|
+| **Project-local** (default) | `./.agent-packages/` | `./package.agent.lock` | Per-project installs, checked into VCS |
+| **Global** | `~/.aam/packages/` | `~/.aam/global.lock` | User-wide utilities, not project-specific |
+| **CI ephemeral** | `$AAM_INSTALL_DIR` or system temp | `./package.agent.lock` (read-only) | Fresh environment per pipeline run |
+
+```bash
+aam install                          # Project-local (default)
+aam install --global                 # Global install
+aam install --frozen                 # Project-local, lock file is authoritative
+AAM_INSTALL_DIR=/tmp/aam aam install # CI ephemeral override
+```
+
+#### Installing from a Specific Vendor
+
+When multiple vendors publish a package with the same base name, always qualify with the `@scope` prefix to target the correct author:
+
+```bash
+# Unscoped — installs the community package named "code-review"
+aam install code-review
+
+# Scoped — installs @myorg's code-review, not @otherorg's
+aam install @myorg/code-review
+aam install @otherorg/code-review
+
+# Specific version from a specific vendor
+aam install @myorg/code-review@1.3.2
+aam install @myorg/code-review@^1.0.0
+
+# Specific dist-tag from a vendor (e.g. enterprise-approved tag)
+aam install @myorg/code-review@stable
+aam install @myorg/code-review@bank-approved
+
+# From a private registry owned by a specific vendor
+aam install @myorg/code-review --registry https://pkg.myorg.internal/aam
+```
+
+Both `@myorg/code-review` and `@otherorg/code-review` can be installed simultaneously — they are stored under `myorg--code-review/` and `otherorg--code-review/` respectively (see §12.2 and §13.13 author collision rule). Skills from each are namespaced accordingly: `myorg--code-review:lint-check` vs `otherorg--code-review:lint-check`.
+
+#### Shared Download Cache
+
+All install modes share a **download cache** at `~/.aam/cache/`. The cache stores downloaded `.aam` archives keyed by `package@version` + integrity hash. Packages are never re-downloaded if a valid cached copy exists.
+
+```
+~/.aam/
+├── cache/                                        # Shared download cache (all modes)
+│   ├── myorg--code-review-1.3.2-sha256-abc123.aam
+│   ├── otherorg--code-review-2.0.0-sha256-def456.aam
+│   └── testing-utils-2.4.0-sha256-ghi789.aam
+├── packages/                                     # Global install root
+│   ├── myorg--code-review/                       # @myorg/code-review
+│   ├── otherorg--code-review/                    # @otherorg/code-review
+│   └── testing-utils/                            # unscoped package
+├── global.lock                                   # Global install lock file
+└── config.yaml                                   # CLI configuration
+```
+
+**Author collision rule**: The `@scope/name` → `scope--name` filesystem mapping (defined in §12.2) is the sole mechanism preventing collisions between same-named packages from different authors. Two packages that share a base name but differ in scope (`@myorg/code-review` and `@otherorg/code-review`) MUST be stored under distinct directory names (`myorg--code-review/` and `otherorg--code-review/` respectively) in both the cache and global packages directory. Implementations MUST NOT flatten scoped names to their bare base name in any install root.
+
+#### Cache Invalidation Rules
+
+| Trigger | Behaviour |
+|---------|-----------|
+| Integrity hash mismatch | Cache entry is rejected; package re-downloaded |
+| `aam cache clean` | Entire cache cleared |
+| `aam cache clean <pkg>@<version>` | Single entry evicted |
+| `aam install --no-cache` | Cache bypassed for this run; result not cached |
+| Registry republish of same version | Cache is **not** invalidated automatically — use `--no-cache` or bump version |
+
+Cached archives MUST be verified against their `sha256` integrity hash before extraction. A corrupted or tampered archive MUST be rejected and the cache entry evicted.
+
+#### Lock File Precedence Rules
+
+When both a user-level (`~/.aam/global.lock`) and project-level (`./package.agent.lock`) lock file exist, resolution follows this precedence order (highest wins):
+
+1. **`./package.agent.lock`** — project lock file always takes precedence for project-local installs.
+2. **`~/.aam/global.lock`** — governs `--global` installs only; never consulted for project-local resolution.
+3. **`resolutions` field** in `package.agent.json` — overrides both lock files for named packages (see §13.9).
+
+Implementations MUST NOT mix project-local and global lock files in the same resolution pass. A global install (`--global`) MUST NOT read or modify `./package.agent.lock`.
+
+#### Global vs Local Resolution Rules
+
+| Rule | Project-local | Global |
+|------|--------------|--------|
+| Artifact lookup scope | `./.agent-packages/` only | `~/.aam/packages/` only |
+| Lock file written | `./package.agent.lock` | `~/.aam/global.lock` |
+| Hoisting target | `./.agent-packages/` root | `~/.aam/packages/` root |
+| Peer dependency resolution | Ancestor chain within project tree | Global install tree |
+| Available to agent platforms | Only when agent runs in project directory | Always — platform SHOULD scan `~/.aam/packages/` |
+
+Agent platforms SHOULD load globally installed packages as a lower-priority fallback after project-local packages. Project-local packages MUST shadow global packages of the same name.

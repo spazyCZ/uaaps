@@ -143,7 +143,7 @@ judge:
 | `input.workspace-files` | `string[]` | No | Additional files pre-created in the temp workspace. |
 | `expected.contains` | `string[]` | No | Substrings that MUST appear in agent output. |
 | `expected.not-contains` | `string[]` | No | Substrings that MUST NOT appear. |
-| `expected.files-created` | `string[]` | No | Files the agent must create in the workspace. |
+| `expected.files-created` | `string[]` | No | Files the agent MUST create in the workspace. |
 | `expected.agent-blocked` | `bool` | No | If `true`, expects the agent was blocked by a hook. |
 | `judge.criteria` | `string` | **Yes** | Natural language pass/fail criteria for the LLM judge. |
 

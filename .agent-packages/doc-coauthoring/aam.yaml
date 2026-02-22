@@ -1,0 +1,14 @@
+name: doc-coauthoring
+version: 0.0.0
+description: Doc Co-Authoring Workflow
+artifacts:
+  skills:
+  - name: doc-coauthoring
+    path: skills/doc-coauthoring/
+    description: Doc Co-Authoring Workflow
+dependencies: {}
+provenance:
+  source_type: git
+  source_url: anthropics/skills
+  source_commit: 1ed29a03dc852d30fa6ef2ca53a67dc2c2c2c563
+  fetched_at: '2026-02-22T12:44:38.238260+00:00'

@@ -60,7 +60,7 @@ Analyze the following evidence and produce a structured finding:
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `name` | `string` | **Yes** | Identifier, `[a-z0-9-]`, max 64 chars. |
-| `description` | `string` | Recommended | Shown in command listings and help. |
+| `description` | `string` | RECOMMENDED | Shown in command listings and help. |
 | `variables` | `Variable[]` | No | Template variables with optional defaults and enums. |
 
 Each variable in the `variables` array has:

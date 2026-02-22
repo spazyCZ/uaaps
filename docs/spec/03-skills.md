@@ -88,10 +88,10 @@ Skills can exist at multiple scopes. The universal resolver follows this precede
 | **Plugin / Package** | `<package>/skills/` | Always namespaced | Yes (`pkg:skill`) |
 
 **Resolution rules**:
-- When project and personal skills share the same `name`, **project wins**.
-- Plugin/package skills are **always namespaced** (`package-name:skill-name`) so they never conflict.
-- Enterprise/managed rules override all other scopes.
-- Monorepo support: skills in nested subdirectory `.claude/skills/` or `.github/skills/` are auto-discovered.
+- When project and personal skills share the same `name`, the project-scoped skill MUST take precedence.
+- Plugin/package skills MUST be namespaced as `package-name:skill-name` and MUST NOT conflict with unnamespaced scopes.
+- Enterprise/managed rules MUST override all other scopes.
+- Implementations MUST auto-discover skills in nested subdirectory `.claude/skills/` or `.github/skills/` within a monorepo.
 
 > **Disputed precedence**: ChatGPT investigation claimed enterprise > personal > project. Our investigation (verified against community guides) found enterprise > project > personal. The enterprise tier being highest is agreed; the project > personal ordering is confirmed by Claude Code behavior where `.claude/skills/` in the project overrides `~/.claude/skills/` for same-named skills.
 

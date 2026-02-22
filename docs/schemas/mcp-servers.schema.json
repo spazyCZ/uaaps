@@ -14,14 +14,30 @@
       "additionalProperties": {
         "$ref": "#/definitions/serverEntry"
       }
+    },
+    "inputs": {
+      "description": "Input variable definitions for sensitive values (API keys, tokens, etc.). Referenced in server config as '${input:id}'.",
+      "type": "array",
+      "items": { "$ref": "#/definitions/inputEntry" }
     }
   },
   "definitions": {
     "serverEntry": {
+      "oneOf": [
+        { "$ref": "#/definitions/stdioServer" },
+        { "$ref": "#/definitions/httpServer" }
+      ]
+    },
+    "stdioServer": {
       "type": "object",
       "required": ["command"],
       "additionalProperties": false,
       "properties": {
+        "type": {
+          "description": "Transport type. Omit or set to 'stdio' for process-based servers.",
+          "type": "string",
+          "const": "stdio"
+        },
         "command": {
           "description": "Executable to launch the MCP server (e.g. 'node', 'python', 'uv').",
           "type": "string"
@@ -36,9 +52,58 @@
           "type": "object",
           "additionalProperties": { "type": "string" }
         },
+        "envFile": {
+          "description": "Path to a .env file whose variables are loaded into the server process environment.",
+          "type": "string"
+        },
         "cwd": {
           "description": "Working directory for the server process. Defaults to the package root.",
           "type": "string"
+        }
+      }
+    },
+    "httpServer": {
+      "type": "object",
+      "required": ["type", "url"],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "description": "Transport type. Use 'http' (HTTP Stream, with SSE fallback) or 'sse' (Server-Sent Events only).",
+          "type": "string",
+          "enum": ["http", "sse"]
+        },
+        "url": {
+          "description": "URL of the remote MCP server. Also accepts Unix socket paths (unix:///path/to/server.sock) and Windows named pipes (pipe:///pipe/name).",
+          "type": "string"
+        },
+        "headers": {
+          "description": "HTTP headers sent with every request (e.g. Authorization). Reference input variables as '${input:id}'.",
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        }
+      }
+    },
+    "inputEntry": {
+      "type": "object",
+      "required": ["type", "id", "description"],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "description": "Input prompt type.",
+          "type": "string",
+          "const": "promptString"
+        },
+        "id": {
+          "description": "Unique identifier referenced in server config as '${input:id}'.",
+          "type": "string"
+        },
+        "description": {
+          "description": "User-friendly prompt text shown when VS Code requests the value.",
+          "type": "string"
+        },
+        "password": {
+          "description": "Hide typed input. Set to true for API keys and passwords.",
+          "type": "boolean"
         }
       }
     }

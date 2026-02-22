@@ -1,0 +1,15 @@
+lockfile_version: 1
+resolved_at: '2026-02-22T12:44:38.250865+00:00'
+packages:
+  doc-coauthoring:
+    version: 0.0.0
+    source: source
+    checksum: sha256:fe167495a57e2f22335e976c7d9dcddf139e38aecdcc71c221700718dbf36031
+    dependencies: {}
+    file_checksums:
+      algorithm: sha256
+      files:
+        aam.yaml: fe167495a57e2f22335e976c7d9dcddf139e38aecdcc71c221700718dbf36031
+        skills/doc-coauthoring/SKILL.md: 2e47d78846faeea4a56e9809c52700087a15a2155a3f293a3efbaded81398ef4
+    source_name: anthropics/skills
+    source_commit: 1ed29a03dc852d30fa6ef2ca53a67dc2c2c2c563

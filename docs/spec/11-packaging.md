@@ -37,7 +37,7 @@ my-package-1.0.0.aam   # produced by: aam pkg pack
 
 **Archive constraints:**
 - Maximum size: **50 MB**
-- Must contain `package.agent.json` at root
+- MUST contain `package.agent.json` at root
 - No symlinks outside the package directory
 - No absolute paths
 - SHA-256 checksum stored in `package.agent.lock` post-install
