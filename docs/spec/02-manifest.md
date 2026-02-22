@@ -87,7 +87,7 @@ The manifest is the **single required file**. It identifies the package and decl
     "evals": [
       {
         "name": "accuracy-eval",
-        "path": "evals/accuracy.yaml",
+        "path": "evals/cases/accuracy-eval.yaml",
         "description": "Measures accuracy against benchmark",
         "metrics": [
           { "name": "accuracy", "type": "percentage" }

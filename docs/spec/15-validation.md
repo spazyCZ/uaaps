@@ -2,7 +2,7 @@
 
 | Rule | Constraint |
 |------|-----------|
-| Package `name` | `[a-z0-9-]`, max 64 chars |
+| Package `name` | `[a-z0-9-]` max 64 chars, or scoped `@scope/name` max 130 chars |
 | Package `version` | Valid SemVer 2.0 |
 | Skill `description` | Max 1024 chars, must describe WHAT + WHEN |
 | SKILL.md body | Recommended < 5,000 tokens / 500 lines |

@@ -9,7 +9,11 @@ package-name/
 │       ├── SKILL.md              # Skill instructions (REQUIRED per skill)
 │       ├── scripts/              # Executable scripts
 │       ├── references/           # Documentation files
-│       └── assets/               # Templates, data, images
+│       ├── assets/               # Templates, data, images
+│       └── tests/                # Deterministic skill tests (optional)
+│           ├── test-config.json  #   Test runner config
+│           ├── fixtures/         #   Test input files
+│           └── cases/            #   Test cases (YAML)
 ├── commands/                     # Slash commands (optional)
 │   └── command-name.md
 ├── agents/                       # Sub-agent definitions (optional)
@@ -20,16 +24,20 @@ package-name/
 │   └── rule-name/
 │       └── RULE.md
 ├── hooks/                        # Lifecycle hooks (optional)
-│   └── hooks.json
+│   ├── hooks.json                #   Hook definitions
+│   ├── scripts/                  #   Shell scripts referenced by hooks
+│   └── tests/                    #   Deterministic hook tests (optional)
+│       ├── test-config.json      #     Test runner config
+│       ├── fixtures/             #     Simulated event payloads (JSON)
+│       └── cases/                #     Test cases (YAML)
 ├── mcp/                          # MCP server configs (optional)
 │   └── servers.json
 ├── evals/                        # LLM-judged evaluations (optional)
 │   ├── eval-config.json          #   Eval runner configuration
 │   ├── fixtures/                 #   Shared test fixtures
-│   │   └── sample.pdf
-│   └── cases/                    #   Eval cases
-│       ├── 01-skill-e2e.yaml     #     Skill end-to-end eval
-│       └── 02-hook-integration.yaml  # Hook integration eval
+│   ├── cases/                    #   Eval cases (YAML)
+│   └── reports/                  #   Eval run reports (auto-generated)
+│       └── <timestamp>.json      #     Full provenance per run
 ├── AGENTS.md                     # Universal agent instructions (optional)
 ├── README.md                     # Human documentation
 ├── CHANGELOG.md                  # Version history
@@ -73,7 +81,7 @@ Evals are **LLM-judged integration tests** that verify skills and hooks work cor
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `version` | `number` | **Yes** | Eval config format version. Currently `1`. |
-| `engine` | `string` | **Yes** | Agent runtime to use: `"claude-code"`, `"copilot"`, `"codex"`, `"cursor"`. |
+| `engine` | `string` | **Yes** | Agent runtime to use. Supported values: `"claude-code"`, `"copilot"`, `"codex"`, `"cursor"`. Current headless eval support is shown in [Platform Eval Entry Points](#platform-eval-entry-points). |
 | `timeout` | `number` | No | Max seconds per eval case. Default `120`. |
 | `judge` | `string` | No | Model used for LLM-as-judge assessment. Default: same as engine model. |
 | `sandbox.network` | `bool` | No | Allow network access in sandbox. Default `false`. |
