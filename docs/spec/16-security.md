@@ -6,7 +6,7 @@
 4. **Hook commands** run as the user — apply least-privilege principles.
 5. **MCP servers** SHOULD NOT expose secrets; use environment variable injection.
 6. **Environment Variables**: Packages MUST explicitly declare required environment variables in the `env` manifest field. Host platforms SHOULD prompt users securely for these values rather than storing them in plaintext.
-7. **Permissions Model**: The `permissions` field in `package.agent.json` is OPTIONAL. When it is present, platforms MUST enforce it as defined in §17.1. A platform that ignores a declared `permissions` field is non-compliant. When the field is absent, platforms MAY apply their own default restrictions.
+7. **Permissions Model**: The `permissions` field in `package.agent.json` is OPTIONAL. When it is present, platforms MUST enforce it as defined in §17.1 Permissions Model below. A platform that ignores a declared `permissions` field is non-compliant. When the field is absent, platforms MAY apply their own default restrictions.
 8. **Sandbox** untrusted packages before production deployment.
 9. **Verify lock file integrity** — `package.agent.lock` hashes prevent supply-chain tampering.
 10. **Run `aam audit`** regularly to check dependencies for known vulnerabilities.

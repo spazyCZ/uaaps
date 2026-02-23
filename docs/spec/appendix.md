@@ -1,4 +1,4 @@
-## Appendix: Confidence Legend
+## Appendix A: Confidence Legend
 
 | Level | Meaning | Example |
 |-------|---------|---------|
@@ -10,7 +10,7 @@ Claims marked as Inferred should be validated before building production tooling
 
 ---
 
-## Appendix A: Comparison of Key Differences
+## Appendix B: Comparison of Key Differences
 
 | Aspect | Claude Code | Cursor |
 |--------|------------|--------|

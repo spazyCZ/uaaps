@@ -82,5 +82,19 @@ Each variable in the `variables` array has:
 | GitHub Copilot | ✅ Yes | `.github/prompts/<name>.prompt.md` | Via prompt picker |
 | Codex | ⚠️ Via skills | Skills with `disable-model-invocation` | `$skill-name` |
 
+### Command Namespacing & Collision
+
+When multiple installed packages define commands with the same `name`, the platform MUST apply this resolution order:
+
+| Scope | Location | Precedence |
+|-------|----------|-----------|
+| **Project** | `./commands/` (in package or `.claude/commands/`) | Highest |
+| **Personal** | `~/.claude/commands/` or user profile | Lower |
+| **Plugin / Package** | `<package>/commands/` | Always namespaced |
+
+Plugin/package commands are **always namespaced** as `package-name:command-name` (e.g., `/code-review:review`). Two packages that both define a command named `review` are addressable as `/code-review:review` and `/testing-utils:review` without conflict.
+
+Unnamespaced invocation (e.g., `/review`) resolves to the project or personal scope. If neither scope defines the command, the platform SHOULD prompt the user to disambiguate when multiple packages provide a command with that name.
+
 ### Migration Strategy
 For platforms without native command support, commands can be **converted to skills** with `disable-model-invocation: true` to achieve similar user-initiated behavior.

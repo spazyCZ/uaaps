@@ -18,6 +18,16 @@ Model Context Protocol servers extend agent capabilities with external tool acce
 }
 ```
 
+### `servers.json` Field Reference
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `servers` | `map<string, ServerDef>` | **Yes** | Map of server name to server definition. Server names MUST be `[a-z0-9-]`. |
+| `servers.<name>.command` | `string` | **Yes** | Executable used to launch the MCP server process. |
+| `servers.<name>.args` | `string[]` | No | Arguments passed to the command. |
+| `servers.<name>.env` | `map<string, string>` | No | Environment variables injected into the server process. Use `${VAR}` syntax to reference host-environment variables (e.g. `${API_KEY}`). |
+| `servers.<name>.type` | `string` | No | Transport type. Permitted values: `stdio` (default), `http`. |
+
 ### Platform Mapping
 
 | Platform | Plugin Location | Project Location | Global Location | Root Variable |

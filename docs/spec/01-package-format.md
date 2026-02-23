@@ -81,7 +81,7 @@ Evals are **LLM-judged integration tests** that verify skills and hooks work cor
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `version` | `number` | **Yes** | Eval config format version. Currently `1`. |
-| `engine` | `string` | **Yes** | Agent runtime to use. Supported values: `"claude-code"`, `"copilot"`, `"codex"`, `"cursor"`. Current headless eval support is shown in [Platform Eval Entry Points](#platform-eval-entry-points). |
+| `engine` | `string` | **Yes** | Agent runtime to use. Supported values: `"claude-code"`, `"codex"`. Values `"copilot"` and `"cursor"` are reserved for future use — specifying them will produce an unsupported-engine error until headless modes are available (see [Platform Eval Entry Points](#platform-eval-entry-points)). |
 | `timeout` | `number` | No | Max seconds per eval case. Default `120`. |
 | `judge` | `string` | No | Model used for LLM-as-judge assessment. Default: same as engine model. |
 | `sandbox.network` | `bool` | No | Allow network access in sandbox. Default `false`. |
@@ -200,6 +200,8 @@ aam eval --dry-run                    # Show what would run, no LLM calls
 #### Eval Report — `evals/reports/<timestamp>.json`
 
 Each eval run produces a JSON report capturing full provenance — which agent, which models, which results. Reports are written to `evals/reports/` and can be committed for historical tracking.
+
+> **Note**: Model IDs in the example below (e.g. `claude-sonnet-4-20250514`) are illustrative. Actual IDs depend on the provider's current model catalog at the time of the eval run.
 
 ```json
 {

@@ -63,7 +63,7 @@ Hooks execute shell commands at specific points in the agent lifecycle. They run
 | `pre-compact` | `PreCompact` | N/A | N/A | No | Before context compaction |
 | `notification` | `Notification` | N/A | N/A | No | System notification |
 
-> **Copilot hook gaps**: Copilot currently supports 4 hook events vs Claude Code's 10. The `stop`, `post-tool-use`, `permission-request`, `sub-agent-end`, `pre-compact`, and `notification` events have no Copilot equivalent. Community feature request [#1157](https://github.com/github/copilot-cli/issues/1157) tracks parity efforts.
+> **Copilot hook gaps**: Copilot currently supports 4 hook events vs Claude Code's 10. The `stop`, `post-tool-use`, `permission-request`, `sub-agent-end`, `pre-compact`, and `notification` events have no Copilot equivalent. A community feature request on the Copilot CLI GitHub repository tracks parity efforts.
 
 ### Hook Types
 

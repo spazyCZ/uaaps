@@ -26,7 +26,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - §13 Dependency Resolution: lock file format, resolution algorithm, conflict handling, CI/CD patterns
 - §14 Package Signing & Verification: Sigstore, GPG, registry attestation, verification policy
 - §15 Governance & Policy Gates: client-side policy gates, approval workflows, audit log events
-- §5.5 Prompts: reusable parameterized prompt templates with variable interpolation
+- §5 Commands: reusable parameterized prompt templates with variable interpolation
 - MkDocs-based documentation structure replacing monolithic `SPECIFICATION.md`
 
 ### Changed

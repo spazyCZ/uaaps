@@ -113,7 +113,22 @@ The manifest is the **single required file**. It identifies the package and decl
   "hooks": "./hooks/hooks.json",                // Default: ./hooks/hooks.json
   "mcp": "./mcp/servers.json",                  // Default: ./mcp/servers.json
 
+  // === DIST-TAGS (optional) ===
+  // Publisher-managed version aliases. See §12.3 for full semantics.
+  "dist-tags": {
+    "stable": "1.0.0",                          // Manually maintained alias
+    "latest": "1.0.0"                           // Auto-set on publish
+  },
+
+  // === DEPENDENCY OVERRIDES (optional) ===
+  // Force a specific resolved version for a transitive dependency. See §13.9.
+  "resolutions": {
+    "git-utils": "2.1.0"                        // Force all transitive refs to this version
+  },
+
   // === INSTALL MODE (optional, for adoption transitioning) ===
+  // Controls deployment target when installing on platforms with partial UAAPS support.
+  // See §11.1 for full semantics and deprecation path.
   "installMode": {                              // Default: "uaaps" for all platforms
     "default": "uaaps",                         // "uaaps" | "plugin"
     "claude-code": "plugin",                    // Per-platform override

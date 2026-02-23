@@ -2,6 +2,7 @@
 
 | Term | Definition |
 |------|-----------|
+| **AAM** | Agent Artifact Manager — the CLI tool (`aam`) for installing, publishing, testing, and managing UAAPS packages. |
 | **Command** | A markdown file triggered by user typing `/name` or referenced as a parameterized template with `{{variable}}` interpolation. User or agent-invoked. |
 | **Skill** | A folder with `SKILL.md` that teaches an agent a specific capability. Model-invoked. |
 | **Agent** | A specialized persona definition with `agent.yaml` + `system-prompt.md`. Model or user-invoked. |

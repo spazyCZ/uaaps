@@ -71,13 +71,21 @@ Provide severity ratings (Critical/High/Medium/Low) with remediation.
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `name` | `string` | **Yes** | Agent identifier. |
+| `name` | `string` | **Yes** | Agent identifier. `[a-z0-9-]`, max 64 chars. |
 | `description` | `string` | **Yes** | Role summary for automatic selection. |
+| `version` | `string` | No | SemVer version of this agent definition. |
 | `system_prompt` | `string` | **Yes** | Relative path to `system-prompt.md`. |
 | `skills` | `string[]` | No | Skills this agent activates. |
 | `commands` | `string[]` | No | Commands (including parameterized templates) this agent uses. |
 | `tools` | `string[]` | No | Tool whitelist (platform-dependent). |
 | `parameters` | `map` | No | Behavioral parameters (temperature, style, etc.). |
+
+### `system-prompt.md` Frontmatter Field Reference
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `description` | `string` | **Yes** | One-line role summary shown in agent listings and used for automatic agent selection. |
+| `capabilities` | `string[]` | No | List of key capabilities for discovery and UI display. |
 
 > **Legacy format**: A single `agent-name.md` file (without a separate `agent.yaml`) is also accepted for backward compatibility. In this case the frontmatter fields from the `system-prompt.md` table below apply directly to the single file.
 
