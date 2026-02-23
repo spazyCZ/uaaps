@@ -156,8 +156,8 @@ expected:
 
 ```bash
 aam test                             # Run all assert tests in current package
-aam test skill-name                  # Run tests for a specific skill
-aam test skill-name --case 01-basic  # Run a single test case
+aam test --skill skill-name                  # Run tests for a specific skill
+aam test --skill skill-name --case 01-basic  # Run a single test case
 ```
 
 ### Platform Compatibility
