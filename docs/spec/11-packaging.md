@@ -52,6 +52,44 @@ my-package-1.0.0.aam   # produced by: aam pkg pack
 - No absolute paths
 - SHA-256 checksum stored in `package.agent.lock` post-install
 
+#### Archive File Selection
+
+The archive packlist MUST be deterministic.
+
+**Selection algorithm:**
+1. If `package.agent.json` defines `files`, start from the union of those glob matches.
+2. Otherwise, start from all files under the package root.
+3. Always include `package.agent.json`.
+4. Always include `README`, `README.md`, `LICENSE`, `LICENSE.md`, `CHANGELOG`, and `CHANGELOG.md` when present.
+5. Always exclude these paths from the candidate set:
+  - `.git/**`, `.hg/**`, `.svn/**`
+  - `.agent-packages/**`, `node_modules/**`
+  - `.venv/**`, `venv/**`, `__pycache__/**`, `*.pyc`
+  - `.DS_Store`, `Thumbs.db`
+  - `package.agent.lock`
+  - `evals/reports/**`
+
+**Packlist rules:**
+- Archive entries MUST use forward-slash paths relative to the package root.
+- Archive entries MUST be sorted lexicographically by path before tar creation.
+- `aam pack` MUST fail if the final packlist omits a file referenced by the manifest, a declared artifact entry, or a configured hook/MCP path.
+- Tools SHOULD warn when the packlist includes likely-secret files such as `.env`, `.env.*`, or credential exports.
+
+#### Reproducible Archive Build
+
+To support provenance and byte-for-byte rebuilds, archive creation MUST be reproducible.
+
+| Property | Requirement |
+|----------|-------------|
+| Entry order | MUST be lexicographic by archive path |
+| Path format | MUST use `/` separators only |
+| Tar owner/group IDs | MUST be normalized to `0` |
+| Tar owner/group names | MUST be empty strings |
+| Modification time | MUST be `SOURCE_DATE_EPOCH` when set, otherwise `0` |
+| Gzip header timestamp | MUST match the normalized archive timestamp |
+
+File mode bits MAY be preserved, but implementations MUST normalize any platform-specific metadata not representable across POSIX tar readers.
+
 ### 12.2 Scoped Package Names
 
 Following npm convention, packages support a `@scope/name` format for namespacing under an organization or author:
@@ -192,7 +230,7 @@ A local filesystem registry is a **directory tree** on disk following a defined 
 
 #### `index.json`
 
-A flat list of all packages in the registry. Implementations MUST regenerate this file after every publish or unpublish operation.
+A flat list of all packages in the registry. Implementations MUST regenerate this file after every publish or lifecycle state mutation.
 
 ```json
 {
@@ -433,7 +471,7 @@ The `replacement` field is OPTIONAL and, when provided, MUST be a valid package 
 
 ### 12.7 Package Lifecycle
 
-Published packages transition through a defined set of states that control visibility and resolution behavior. UAAPS follows an **immutability-first** model: once an archive is published, it is permanent.
+Published packages transition through a defined set of states that control visibility and resolution behavior. UAAPS follows an **immutability-first** model: once an archive is published, its bytes and version identity are permanent.
 
 #### State Machine
 
@@ -494,3 +532,5 @@ The `message` field is REQUIRED when `deprecated` is present. The `replacement` 
 #### Immutability Guarantee
 
 > Unlike npm's `unpublish`, UAAPS follows Cargo's immutability model: published archives are permanent. This guarantees that existing lock files always resolve successfully, preventing supply-chain breakage.
+
+Registries MUST reject any attempt to publish different archive bytes for an already-published `name@version`, even if the prior version is deprecated or yanked.

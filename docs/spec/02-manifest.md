@@ -31,16 +31,28 @@ The manifest is the **single required file**. It identifies the package and decl
   // Declaring artifacts explicitly enables richer registry metadata and description per artifact.
   "artifacts": {
     "skills": [
-      { "name": "pdf-tools", "path": "skills/pdf-tools/", "description": "Extract text from PDFs" }
+      { "name": "pdf-tools", "path": "skills/pdf-tools/", "description": "Extract text from PDFs" },
+      { "name": "ocr-reader", "path": "skills/ocr-reader/", "description": "OCR support for scanned documents" }
     ],
     "agents": [
-      { "name": "code-auditor", "path": "agents/code-auditor/", "description": "Security audit agent" }
+      { "name": "code-auditor", "path": "agents/code-auditor/", "description": "Security audit agent" },
+      { "name": "github-reviewer", "path": "agents/github-reviewer/", "description": "Review pull requests on GitHub" }
     ],
     "commands": [
       { "name": "review", "path": "commands/review.md", "description": "Code review command" },
       { "name": "audit-finding", "path": "commands/audit-finding.md", "description": "Finding template" }
     ]
   },
+
+  // === PACKAGE CONTENT SELECTION (optional) ===
+  // Restricts which files are included in the published .aam archive. See §12.1.
+  "files": [
+    "skills/**",
+    "commands/**",
+    "agents/**",
+    "README.md",
+    "LICENSE"
+  ],
 
   // === DEPENDENCIES (optional) ===
   "dependencies": {                             // Other agent packages required
@@ -52,6 +64,61 @@ The manifest is the **single required file**. It identifies the package and decl
   },
   "peerDependencies": {                         // Must be provided by host environment
     "eslint-rules": ">=3.0.0"
+  },
+  "dependencyGroups": {                         // Non-runtime, opt-in dependency sets
+    "dev": {
+      "description": "Local authoring and CI tooling",
+      "dependencies": {
+        "test-harness": "^2.0.0",
+        "lint-utils": "^1.4.0"
+      },
+      "systemDependencies": {
+        "packages": {
+          "npm": ["markdownlint-cli@^0.41"]
+        }
+      }
+    },
+    "docs": {
+      "dependencies": {
+        "site-preview": "^1.2.0"
+      }
+    }
+  },
+  "extras": {                                   // Public feature bundles selected by consumers
+    "ocr": {
+      "description": "OCR support for scanned PDFs",
+      "dependencies": {
+        "image-tools": "^2.0.0"
+      },
+      "systemDependencies": {
+        "packages": {
+          "apt": ["tesseract-ocr"]
+        }
+      },
+      "artifacts": {
+        "skills": ["ocr-reader"]
+      },
+      "permissions": {
+        "shell": {
+          "allow": true,
+          "binaries": ["tesseract"]
+        }
+      }
+    },
+    "github": {
+      "dependencies": {
+        "gh-integration": "^1.5.0"
+      },
+      "artifacts": {
+        "agents": ["github-reviewer"]
+      },
+      "permissions": {
+        "network": {
+          "hosts": ["api.github.com"],
+          "schemes": ["https"]
+        }
+      }
+    }
   },
   "systemDependencies": {                       // OS-level / runtime requirements
     "python": ">=3.10",
@@ -164,9 +231,37 @@ homepage: https://docs.example.com
 skills: ./skills
 commands: ./commands
 agents: ./agents
+files:
+  - skills/**
+  - commands/**
+  - README.md
 
 dependencies:
   code-review: "^1.0.0"
+
+dependencyGroups:
+  dev:
+    description: Local authoring and CI tooling
+    dependencies:
+      test-harness: "^2.0.0"
+  docs:
+    dependencies:
+      site-preview: "^1.2.0"
+
+extras:
+  ocr:
+    description: OCR support for scanned PDFs
+    dependencies:
+      image-tools: "^2.0.0"
+    artifacts:
+      skills: [ocr-reader]
+  github:
+    dependencies:
+      gh-integration: "^1.5.0"
+    permissions:
+      network:
+        hosts: [api.github.com]
+        schemes: [https]
 
 x-claude:
   marketplace: anthropics/skills   # x-<vendor-id>, value MUST be an object
@@ -192,6 +287,70 @@ x-cursor:
 | Duplicate keys | MUST NOT contain duplicate keys in the same mapping |
 
 Tools that convert between JSON and YAML MUST produce output that round-trips without data loss. A manifest that cannot be losslessly converted between formats is non-conformant.
+
+### Package Content Selection
+
+The `files` field controls which paths are included when building a `.aam` archive.
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `files` | `string[]` | No | Glob patterns relative to the package root. When present, only matching paths are eligible for inclusion, subject to the mandatory inclusions and exclusions in §12.1. |
+
+**Rules**:
+- `files` entries MUST be relative paths using forward slashes.
+- `files` entries MUST NOT resolve outside the package root.
+- `files` entries MUST NOT use negated patterns (`!foo/**`).
+- `aam pack` MUST fail if the computed packlist excludes a file referenced by the manifest or by a declared artifact.
+- If `files` is omitted, tools MUST use the default inclusion algorithm defined in §12.1.
+
+### Dependency Groups
+
+The `dependencyGroups` field defines named, non-runtime dependency sets for authoring and tooling workflows such as local development, documentation builds, and eval runs.
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `dependencyGroups` | `object` | No | Map of group name to non-runtime dependency declaration. Selected explicitly during install; never installed implicitly for consumers. |
+
+Each group entry uses this shape:
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `description` | `string` | No | Human-readable purpose of the group. |
+| `dependencies` | `object` | No | UAAPS package dependencies used only for the selected workflow. |
+| `systemDependencies` | `object` | No | Non-runtime system requirements applied only when the group is selected. |
+
+**Rules**:
+- Group names MUST match `[a-z0-9][a-z0-9-]*`.
+- Each group MUST declare at least one of `dependencies` or `systemDependencies`.
+- `dependencyGroups` MUST be root-local metadata. Dependencies declared inside a group MUST NOT be exposed transitively when another package depends on this package.
+- Tools MUST install group dependencies only when the group is selected explicitly, as defined in §13.1.
+
+### Extras
+
+The `extras` field defines public, consumer-facing feature bundles that can be selected at install time.
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `extras` | `object` | No | Map of feature-selector name to an optional install bundle. Extras extend the package only when selected explicitly by the consumer. |
+
+Each extra entry uses this shape:
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `description` | `string` | No | Human-readable summary of the feature. |
+| `dependencies` | `object` | No | UAAPS package dependencies activated by selecting the extra. |
+| `systemDependencies` | `object` | No | Additional system requirements activated by selecting the extra. |
+| `artifacts` | `object` | No | Additional root-package artifacts activated only when the extra is selected. |
+| `permissions` | `object` | No | Additional root-package permissions requested only when the extra is selected. |
+
+**Rules**:
+- Extra names MUST match `[a-z0-9][a-z0-9-]*`.
+- Each extra MUST declare at least one of `dependencies`, `systemDependencies`, `artifacts`, or `permissions`.
+- Extras are part of the package's public install contract and MAY be selected by consumers as defined in §13.1.
+- When an extra declares `artifacts`, the package MUST declare the top-level `artifacts` registry explicitly. Extra-scoped artifact references MUST resolve by artifact `name` within that registry.
+- Non-referenced artifacts remain part of the base package. Artifacts referenced by an extra MUST be activated only when that extra is selected.
+- Extra-scoped permissions are additive to the root package's `permissions` declaration. They MUST use the same schema and enforcement model as top-level `permissions`.
+- Extras MUST NOT change manifest parsing semantics.
 
 ### Vendor Extensions
 

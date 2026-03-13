@@ -87,6 +87,12 @@
         }
       }
     },
+    "files": {
+      "description": "Glob patterns relative to the package root controlling which files are included in the published .aam archive.",
+      "type": "array",
+      "items": { "type": "string" },
+      "uniqueItems": true
+    },
     "dependencies": {
       "description": "Other UAAPS packages required. Keys are package names, values are SemVer ranges.",
       "$ref": "#/$defs/dependencyMap"
@@ -99,46 +105,21 @@
       "description": "Packages that must be provided by the host environment. Not auto-installed.",
       "$ref": "#/$defs/dependencyMap"
     },
+    "dependencyGroups": {
+      "description": "Named, non-runtime dependency sets for tooling workflows such as dev, docs, and eval.",
+      "$ref": "#/$defs/dependencyGroupMap"
+    },
+    "extras": {
+      "description": "Public, consumer-facing feature bundles selected explicitly at install time.",
+      "$ref": "#/$defs/extraMap"
+    },
     "resolutions": {
       "description": "Force specific versions for transitive dependencies to resolve conflicts.",
       "$ref": "#/$defs/dependencyMap"
     },
     "systemDependencies": {
       "description": "OS-level and runtime requirements. Verified via pre-flight checks; not auto-installed (except pip/npm with --install-system-deps).",
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "python": {
-          "description": "Required Python version (SemVer range, e.g. '>=3.10').",
-          "type": "string"
-        },
-        "node": {
-          "description": "Required Node.js version (SemVer range, e.g. '>=18').",
-          "type": "string"
-        },
-        "packages": {
-          "description": "Packages to install via package managers.",
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "pip":   { "type": "array", "items": { "type": "string" } },
-            "npm":   { "type": "array", "items": { "type": "string" } },
-            "brew":  { "type": "array", "items": { "type": "string" } },
-            "apt":   { "type": "array", "items": { "type": "string" } },
-            "cargo": { "type": "array", "items": { "type": "string" } }
-          }
-        },
-        "binaries": {
-          "description": "Executables that must exist on $PATH.",
-          "type": "array",
-          "items": { "type": "string" }
-        },
-        "mcp-servers": {
-          "description": "MCP server names that must be available.",
-          "type": "array",
-          "items": { "type": "string" }
-        }
-      }
+      "$ref": "#/$defs/systemDependenciesObject"
     },
     "env": {
       "description": "Environment variables required by this package.",
@@ -258,7 +239,7 @@
           "description": "Human-readable deprecation notice. Should include migration guidance.",
           "type": "string"
         },
-        "successor": {
+        "replacement": {
           "description": "Suggested replacement package name or version range.",
           "type": "string"
         }
@@ -341,6 +322,134 @@
     "dependencyMap": {
       "type": "object",
       "additionalProperties": { "type": "string" }
+    },
+    "dependencyGroupMap": {
+      "type": "object",
+      "propertyNames": {
+        "pattern": "^[a-z0-9][a-z0-9-]*$"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/dependencyGroup"
+      }
+    },
+    "dependencyGroup": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "type": "string",
+          "maxLength": 1024
+        },
+        "dependencies": {
+          "$ref": "#/$defs/dependencyMap"
+        },
+        "systemDependencies": {
+          "$ref": "#/$defs/systemDependenciesObject"
+        }
+      },
+      "anyOf": [
+        { "required": ["dependencies"] },
+        { "required": ["systemDependencies"] }
+      ]
+    },
+    "extraMap": {
+      "type": "object",
+      "propertyNames": {
+        "pattern": "^[a-z0-9][a-z0-9-]*$"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/extra"
+      }
+    },
+    "extra": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "type": "string",
+          "maxLength": 1024
+        },
+        "dependencies": {
+          "$ref": "#/$defs/dependencyMap"
+        },
+        "systemDependencies": {
+          "$ref": "#/$defs/systemDependenciesObject"
+        },
+        "artifacts": {
+          "$ref": "#/$defs/extraArtifactSelection"
+        },
+        "permissions": {
+          "$ref": "#/$defs/permissionsObject"
+        }
+      },
+      "anyOf": [
+        { "required": ["dependencies"] },
+        { "required": ["systemDependencies"] },
+        { "required": ["artifacts"] },
+        { "required": ["permissions"] }
+      ]
+    },
+    "extraArtifactSelection": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "skills": {
+          "type": "array",
+          "items": { "type": "string" },
+          "uniqueItems": true
+        },
+        "agents": {
+          "type": "array",
+          "items": { "type": "string" },
+          "uniqueItems": true
+        },
+        "commands": {
+          "type": "array",
+          "items": { "type": "string" },
+          "uniqueItems": true
+        }
+      },
+      "anyOf": [
+        { "required": ["skills"] },
+        { "required": ["agents"] },
+        { "required": ["commands"] }
+      ]
+    },
+    "systemDependenciesObject": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "python": {
+          "description": "Required Python version (SemVer range, e.g. '>=3.10').",
+          "type": "string"
+        },
+        "node": {
+          "description": "Required Node.js version (SemVer range, e.g. '>=18').",
+          "type": "string"
+        },
+        "packages": {
+          "description": "Packages to install via package managers.",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "pip":   { "type": "array", "items": { "type": "string" } },
+            "npm":   { "type": "array", "items": { "type": "string" } },
+            "brew":  { "type": "array", "items": { "type": "string" } },
+            "apt":   { "type": "array", "items": { "type": "string" } },
+            "cargo": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "binaries": {
+          "description": "Executables that must exist on $PATH.",
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "mcp-servers": {
+          "description": "MCP server names that must be available.",
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
     },
     "permissionsObject": {
       "description": "A permissions object matching the structure of the top-level permissions field.",

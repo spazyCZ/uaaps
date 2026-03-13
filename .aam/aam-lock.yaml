@@ -1,5 +1,5 @@
 lockfile_version: 1
-resolved_at: '2026-02-22T12:44:38.250865+00:00'
+resolved_at: '2026-03-12T22:21:55.975655+00:00'
 packages:
   doc-coauthoring:
     version: 0.0.0
@@ -13,3 +13,86 @@ packages:
         skills/doc-coauthoring/SKILL.md: 2e47d78846faeea4a56e9809c52700087a15a2155a3f293a3efbaded81398ef4
     source_name: anthropics/skills
     source_commit: 1ed29a03dc852d30fa6ef2ca53a67dc2c2c2c563
+  gh-address-comments:
+    version: 0.0.0
+    source: source
+    checksum: sha256:a7ab4ea4bc5df6ec452bfe0b540154403b0145083f72b4d932490f2f41ff9067
+    dependencies: {}
+    file_checksums:
+      algorithm: sha256
+      files:
+        aam.yaml: a7ab4ea4bc5df6ec452bfe0b540154403b0145083f72b4d932490f2f41ff9067
+        skills/gh-address-comments/SKILL.md: 77389eefd3fb6584210668ca8e43f4b8de87e7722ddd953474bc9e24cdfaaedd
+        skills/gh-address-comments/LICENSE.txt: 58d1e17ffe5109a7ae296caafcadfdbe6a7d176f0bc4ab01e12a689b0499d8bd
+        skills/gh-address-comments/assets/github-small.svg: ee05e92d373d4d84f4612af3c1090ef67698d421bbe30896a4ed5a00cb86a069
+        skills/gh-address-comments/assets/github.png: d55a9baa41798d8b5108e3058df3a5bda09914ea9fd73b49929cc38a8832424f
+        skills/gh-address-comments/agents/openai.yaml: 12cf845a78254dde85e60eefb45a60e6ce2129d321f3e1d691d4ebca9a140861
+        skills/gh-address-comments/scripts/fetch_comments.py: d7bc64f6b26f7482f9ca9dd7c923a5b8b20e1ef13491ae2d9052cd208a7c1ad1
+    source_name: openai/skills:.curated
+    source_commit: 2c9ebb321958f64aa9414b46e4240901e2b9e1a9
+  gh-fix-ci:
+    version: 0.0.0
+    source: source
+    checksum: sha256:839458af2ff7fd9d771de9984e7122a1e53d4960433b56618b6022b2f2364ca8
+    dependencies: {}
+    file_checksums:
+      algorithm: sha256
+      files:
+        aam.yaml: 839458af2ff7fd9d771de9984e7122a1e53d4960433b56618b6022b2f2364ca8
+        skills/gh-fix-ci/SKILL.md: 7b326b4a2f0f5f85122144628ec02077e48841e0e0e82efce88b3415bcfb7c26
+        skills/gh-fix-ci/LICENSE.txt: 4dd13869245e356246a5b770723247bbb80a8f07a181d1d3d873a1734297cdb9
+        skills/gh-fix-ci/assets/github-small.svg: ee05e92d373d4d84f4612af3c1090ef67698d421bbe30896a4ed5a00cb86a069
+        skills/gh-fix-ci/assets/github.png: d55a9baa41798d8b5108e3058df3a5bda09914ea9fd73b49929cc38a8832424f
+        skills/gh-fix-ci/agents/openai.yaml: 36f73b9450504983d1647c960689596f59bf9147c14b1b43162912ed7ada9af6
+        skills/gh-fix-ci/scripts/inspect_pr_checks.py: 9459e5b03f86785d184a83e5cd8d621b832e918ec04158a2962d867785812c6c
+    source_name: openai/skills:.curated
+    source_commit: 2c9ebb321958f64aa9414b46e4240901e2b9e1a9
+  git-commit:
+    version: 0.0.0
+    source: source
+    checksum: sha256:e89497975d58c71cfbfdae10510ec2b2ff7ad01535f25a69f0085407a8bd8e15
+    dependencies: {}
+    file_checksums:
+      algorithm: sha256
+      files:
+        aam.yaml: e89497975d58c71cfbfdae10510ec2b2ff7ad01535f25a69f0085407a8bd8e15
+        skills/git-commit/SKILL.md: 554d1a3c6d95f15bc1170160659ecdc9a9958b64f377f3988941b672c249b13f
+    source_name: github/awesome-copilot
+    source_commit: dc8b0cc5466dcaa482b1bb8b13b529bf8031d25a
+  github-issues:
+    version: 0.0.0
+    source: source
+    checksum: sha256:0a86845f53f3bbd67ade423a79c2a2ed23acd8f31b64d710371aa4e6cdf914ff
+    dependencies: {}
+    file_checksums:
+      algorithm: sha256
+      files:
+        aam.yaml: 0a86845f53f3bbd67ade423a79c2a2ed23acd8f31b64d710371aa4e6cdf914ff
+        skills/github-issues/SKILL.md: dedcc5844bf2fd4f348b418dbc0c0042c7103657cb39cc6f82c084c0b5614235
+        skills/github-issues/references/templates.md: 8202c0277a34033acd44ed960a236f31a5b7a74d98769dffac497f2267279fed
+    source_name: github/awesome-copilot
+    source_commit: dc8b0cc5466dcaa482b1bb8b13b529bf8031d25a
+  agentic-eval:
+    version: 0.0.0
+    source: source
+    checksum: sha256:d53652b2e18af30aebb15cfc074c4161ad13db20b2cc724639e3d4a99e5e76e5
+    dependencies: {}
+    file_checksums:
+      algorithm: sha256
+      files:
+        aam.yaml: d53652b2e18af30aebb15cfc074c4161ad13db20b2cc724639e3d4a99e5e76e5
+        skills/agentic-eval/SKILL.md: fb198a5c9b12e746d01a43c9ff3368598fdc1134bb458766f580186f31001573
+    source_name: github/awesome-copilot
+    source_commit: dc8b0cc5466dcaa482b1bb8b13b529bf8031d25a
+  agent-governance:
+    version: 0.0.0
+    source: source
+    checksum: sha256:035b892f51415d20199c825fec48df6b95245563d6dc803d4975f797ccbf1f2c
+    dependencies: {}
+    file_checksums:
+      algorithm: sha256
+      files:
+        aam.yaml: 035b892f51415d20199c825fec48df6b95245563d6dc803d4975f797ccbf1f2c
+        skills/agent-governance/SKILL.md: aeec5110688463f04f3098184a1b6c19abbda32937832e8506899eb08138971f
+    source_name: github/awesome-copilot
+    source_commit: dc8b0cc5466dcaa482b1bb8b13b529bf8031d25a

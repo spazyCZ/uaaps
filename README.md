@@ -1,6 +1,6 @@
 # 📦 UAAPS — Universal Agentic Artifact Package Specification
 
-> **Version:** 0.5.0-draft &nbsp;|&nbsp; **Status:** 🌐 Open Standard, seeking collaborators
+> **Version:** 0.8.0-draft &nbsp;|&nbsp; **Status:** 🌐 Open Standard, seeking collaborators
 
 ✍️ **Write once. Deploy to any agent platform.**
 
@@ -111,8 +111,8 @@ The specification is published at **[uaaps.github.io/uaaps_docs](https://uaaps.g
 The spec source lives in [`docs/spec/`](docs/spec/) — each chapter is a separate Markdown file. To build and preview locally:
 
 ```bash
-pip install mkdocs-material
-mkdocs serve
+.venv/bin/python -m pip install mkdocs-material
+.venv/bin/python -m mkdocs serve
 ```
 
 ---
@@ -130,7 +130,7 @@ We are looking for collaborators who are:
 
 ### 🚀 How to Contribute
 
-1. 📖 **Read the spec** — [docs/SPECIFICATION.md](docs/SPECIFICATION.md)
+1. 📖 **Read the spec** — [docs/spec/full.md](docs/spec/full.md)
 2. 💬 **Open an issue** — Feedback, edge cases, missing scenarios
 3. 🔀 **Submit a PR** — Spec improvements, examples, reference implementations
 4. 🧪 **Test the Skills Concentrator** — [How to use remote skills](https://github.com/spazyCZ/agent-package-manager/tree/main?tab=readme-ov-file#quick-start)

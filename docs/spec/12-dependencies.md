@@ -9,7 +9,102 @@ Dependency resolution is a core differentiator of UAAPS over raw vendor plugin s
 | **Direct** | `dependencies` | **Yes** — install fails | Other agent packages this package requires to function. |
 | **Optional** | `optionalDependencies` | No — install succeeds | Enhances functionality if present. Graceful degradation if absent. |
 | **Peer** | `peerDependencies` | **Yes** — warn/fail | MUST be provided by the host project or another top-level install. Not auto-installed. |
+| **Tooling group** | `dependencyGroups` | No — opt-in only | Named, non-runtime dependency sets for workflows such as `dev`, `docs`, or `eval`. |
+| **Feature selector** | `extras` | No — opt-in only | Public, consumer-facing feature bundles such as `ocr`, `github`, or `enterprise`. |
 | **System** | `systemDependencies` | **Yes** — pre-flight check | OS binaries, language runtimes, pip/npm packages, MCP servers. |
+
+#### Non-runtime Dependency Groups
+
+Dependency groups let package authors declare workflow-specific dependencies without making them part of the runtime dependency contract.
+
+```jsonc
+{
+  "dependencyGroups": {
+    "dev": {
+      "description": "Local authoring and CI tooling",
+      "dependencies": {
+        "test-harness": "^2.0.0",
+        "lint-utils": "^1.4.0"
+      }
+    },
+    "docs": {
+      "dependencies": {
+        "site-preview": "^1.2.0"
+      },
+      "systemDependencies": {
+        "packages": {
+          "npm": ["markdownlint-cli@^0.41"]
+        }
+      }
+    }
+  }
+}
+```
+
+**Semantics:**
+- `aam install` MUST install only runtime dependencies by default.
+- `aam install --with dev,docs` MUST include the selected dependency groups in the root requirement set.
+- `aam install --only-group docs` MUST install only the named dependency group plus the root package itself.
+- Group dependencies MUST be non-transitive package metadata. When another package depends on this package, its `dependencyGroups` MUST be ignored unless the consumer selects matching groups locally.
+- When a selected group declares `systemDependencies`, those checks MUST participate in the same pre-flight flow as top-level `systemDependencies`.
+- Tooling group names are author-defined, but `dev`, `docs`, and `eval` are RECOMMENDED conventions.
+
+#### Extras — Optional Feature Bundles
+
+Extras let package authors publish consumer-facing feature bundles without making them part of the base install.
+
+```jsonc
+{
+  "extras": {
+    "ocr": {
+      "description": "OCR support for scanned PDFs",
+      "dependencies": {
+        "image-tools": "^2.0.0"
+      },
+      "systemDependencies": {
+        "packages": {
+          "apt": ["tesseract-ocr"]
+        }
+      },
+      "artifacts": {
+        "skills": ["ocr-reader"]
+      },
+      "permissions": {
+        "shell": {
+          "allow": true,
+          "binaries": ["tesseract"]
+        }
+      }
+    },
+    "github": {
+      "dependencies": {
+        "gh-integration": "^1.5.0"
+      },
+      "artifacts": {
+        "agents": ["github-reviewer"]
+      },
+      "permissions": {
+        "network": {
+          "hosts": ["api.github.com"],
+          "schemes": ["https"]
+        }
+      }
+    }
+  }
+}
+```
+
+**Semantics:**
+- `aam install` MUST install the base package without extras unless extras are requested explicitly.
+- `aam install --extras ocr,github` MUST include the selected extras for the root package.
+- `aam install @myorg/pdf-tools[ocr,github]` MUST add the package as a direct dependency with those extras selected.
+- Extras MUST be additive. Selecting an extra MUST NOT remove or replace base dependencies.
+- Extras MUST be root-selected only. A package manifest MUST NOT request extras of its transitive dependencies.
+- When a selected extra declares `artifacts`, those artifact names MUST be activated for the root package in addition to the base artifact set.
+- When a selected extra declares `permissions`, those permissions MUST be unioned with the root package's base `permissions` request before platform enforcement is applied.
+- Tools MUST surface extra-selected permissions to the user at install time so the requested capability expansion is reviewable.
+- In this version of the spec, extras MAY affect dependency resolution, system dependency checks, root-package artifact activation, and root-package permissions. They MUST NOT alter manifest parsing semantics or the dependency metadata of transitive packages.
+- Extra names are author-defined, but short capability names such as `ocr`, `github`, and `enterprise` are RECOMMENDED.
 
 ### 13.2 Version Constraint Syntax
 
@@ -30,11 +125,18 @@ After resolution, the solver writes a deterministic **lock file** pinning exact 
 
 ```jsonc
 {
-  "lockVersion": 1,
+  "lockVersion": 2,
   "resolved": {
     "code-review": {
       "version": "1.3.2",
-      "source": "marketplace:anthropics/skills",
+      "source": {
+        "type": "registry",
+        "registry": "https://aamregistry.io",
+        "name": "code-review",
+        "version": "1.3.2",
+        "tarball": "https://aamregistry.io/packages/code-review/1.3.2/tarball",
+        "display": "registry:code-review"
+      },
       "integrity": "sha256-abc123...",
       "dependencies": {
         "git-utils": "1.0.1"
@@ -42,12 +144,27 @@ After resolution, the solver writes a deterministic **lock file** pinning exact 
     },
     "testing-utils": {
       "version": "2.4.0",
-      "source": "npm:@aamregistry/testing-utils",
+      "source": {
+        "type": "registry",
+        "registry": "https://aamregistry.io",
+        "name": "testing-utils",
+        "version": "2.4.0",
+        "resolvedTag": "latest",
+        "tarball": "https://aamregistry.io/packages/testing-utils/2.4.0/tarball",
+        "display": "registry:testing-utils"
+      },
       "integrity": "sha256-def456..."
     },
     "git-utils": {
       "version": "1.0.1",
-      "source": "marketplace:anthropics/skills",
+      "source": {
+        "type": "registry",
+        "registry": "https://aamregistry.io",
+        "name": "git-utils",
+        "version": "1.0.1",
+        "tarball": "https://aamregistry.io/packages/git-utils/1.0.1/tarball",
+        "display": "registry:git-utils"
+      },
       "integrity": "sha256-ghi789..."
     }
   },
@@ -65,10 +182,36 @@ After resolution, the solver writes a deterministic **lock file** pinning exact 
 }
 ```
 
+#### Structured Source Metadata
+
+Each resolved package entry MUST store `source` as a structured object in lock file version `2` and later.
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `type` | `string` | **Yes** | Source kind. Supported values in this version: `registry`, `file`, `bundle`. |
+| `registry` | `string` | For `registry` | Canonical registry base URL used for resolution. |
+| `name` | `string` | For `registry` | Canonical package identifier. |
+| `version` | `string` | For `registry` | Exact resolved package version. |
+| `resolvedTag` | `string` | No | Dist-tag requested by the user, if resolution originated from a tag such as `stable` or `latest`. |
+| `tarball` | `string` | For `registry` | Exact artifact URL fetched by the resolver. |
+| `path` | `string` | For `file` or `bundle` | Canonical local path or URI of the selected artifact. |
+| `target` | `string` | For `bundle` | Target platform encoded by the bundle, if applicable. |
+| `display` | `string` | No | Backward-compatible human-readable shorthand. Informational only. |
+
+**Rules**:
+- The `source` object MUST be authoritative. Tools MUST NOT derive canonical resolution semantics from `display`.
+- Tools writing lock file version `2` MUST emit the structured object form.
+- Tools SHOULD continue reading legacy lock file version `1` entries where `source` is a string.
+- A tool that rewrites a legacy lock file SHOULD upgrade it to `lockVersion: 2` and preserve the old string only in `source.display` when useful for diagnostics.
+
+When dependency groups are selected during lock generation, the lock file SHOULD record them in a top-level `groups` object so the selected workflow inputs remain reproducible.
+When extras are selected during lock generation, the lock file SHOULD record them in a top-level `selectedExtras` object so feature selections remain reproducible. When an extra contributes artifacts or permissions, the lock file SHOULD record those effective additions as derived install metadata.
+
 **Behavior**:
 - If `package.agent.lock` exists, install uses **locked versions** (reproducible builds).
 - `aam install` reads the lock file; `aam update` regenerates it.
 - Lock files SHOULD be committed to version control for deterministic environments.
+- Tools MUST support reading lock file version `1` and `2`. Tools writing new lock files SHOULD write version `2`.
 
 ### 13.4 Resolution Algorithm
 
@@ -78,7 +221,7 @@ Resolution proceeds through five named phases:
 
 **Phase 1: Parse** — Read root `package.agent.json`. If `package.agent.lock` exists and `--frozen` is set, skip to Phase 5 (locked install).
 
-**Phase 2: Build requirement graph** — Collect all `dependencies`, `peerDependencies`, and `optionalDependencies` into an initial requirement DAG. Each edge carries a version constraint.
+**Phase 2: Build requirement graph** — Collect all `dependencies`, `peerDependencies`, and `optionalDependencies` into an initial requirement DAG. If the user selected any `dependencyGroups`, collect those groups' `dependencies` and `systemDependencies` into the same root requirement set. If the user selected any `extras`, collect those extras' `dependencies` and `systemDependencies` into the same root requirement set. Each dependency edge carries a version constraint.
 
 **Phase 3: Resolve** — For each unresolved requirement, in topological order:
 
@@ -142,6 +285,48 @@ The `resolverVersion` field is OPTIONAL. When absent, version `1` is assumed.
 | **Minimal** | `--minimal` | Lowest version satisfying each constraint (CI reproducibility). |
 | **Latest** | `--latest` | Ignore constraints, install latest of everything (dangerous). |
 | **Dry-run** | `--dry-run` | Resolve and display tree without installing. |
+
+#### Group Selection Flags
+
+| Flag | Behavior |
+|------|----------|
+| `--with <group>[,<group>...]` | Include one or more named dependency groups in addition to runtime dependencies. |
+| `--only-group <group>[,<group>...]` | Install only the selected dependency groups for the root package, skipping runtime dependencies. |
+
+If a requested group name does not exist in `package.agent.json`, the tool MUST fail before resolution begins.
+
+#### Extra Selection Syntax
+
+| Form | Behavior |
+|------|----------|
+| `aam install --extras <extra>[,<extra>...]` | Select extras for the root package in the current workspace. |
+| `aam install <pkg>[<extra>,<extra>]` | Add a direct dependency with explicit extras selected for that package. |
+
+If a requested extra name does not exist for the targeted package, the tool MUST fail before resolution begins.
+
+#### Extra-scoped Artifact Activation
+
+Extras MAY activate additional artifacts from the root package, but only through the explicit top-level `artifacts` registry.
+
+| Rule | Requirement |
+|------|-------------|
+| Extra artifact references are by artifact `name` | MUST |
+| Referenced artifact names MUST exist in the top-level `artifacts` registry | MUST |
+| Selected extras MAY activate additional `skills`, `agents`, or `commands` | MAY |
+| Selected extras MUST NOT deactivate base artifacts | MUST NOT |
+| Artifact activation by extras applies only to the root package in this version | MUST |
+
+#### Extra-scoped Permissions
+
+Extras MAY request additional permissions for the root package.
+
+| Rule | Requirement |
+|------|-------------|
+| Extra `permissions` MUST use the same schema as top-level `permissions` | MUST |
+| Effective root permissions are the union of base `permissions` and all selected extra permissions | MUST |
+| Tools MUST display extra-added permissions to the user before install completes | MUST |
+| Platforms MUST enforce the effective root permission set at runtime | MUST |
+| Extra-added permissions apply only to the root package in this version | MUST |
 
 ### 13.6 Package Dependencies (Agent-to-Agent)
 
@@ -292,6 +477,10 @@ When two installed packages export skills with the same `name`:
 | Command | Description |
 |---------|-------------|
 | `aam install` | Install all dependencies from manifest (or lock file). |
+| `aam install --with dev,docs` | Install runtime dependencies plus the selected dependency groups. |
+| `aam install --only-group eval` | Install only the selected non-runtime dependency group for the root package. |
+| `aam install --extras ocr,github` | Install the root package with the selected optional feature bundles. |
+| `aam install @myorg/pdf-tools[ocr]` | Add a direct dependency with explicit extras selected. |
 | `aam install <pkg>` | Add a package and resolve. |
 | `aam update` | Re-resolve all dependencies, update lock file. |
 | `aam update <pkg>` | Update a single package within constraints. |
@@ -422,7 +611,7 @@ All install modes share a **download cache** at `~/.aam/cache/`. The cache store
 | `aam cache clean` | Entire cache cleared |
 | `aam cache clean <pkg>@<version>` | Single entry evicted |
 | `aam install --no-cache` | Cache bypassed for this run; result not cached |
-| Registry republish of same version | Cache is **not** invalidated automatically — use `--no-cache` or bump version |
+| Registry serves different bytes for same `name@version` | Client MUST treat this as an integrity violation and reject the artifact |
 
 Cached archives MUST be verified against their `sha256` integrity hash before extraction. A corrupted or tampered archive MUST be rejected and the cache entry evicted.
 

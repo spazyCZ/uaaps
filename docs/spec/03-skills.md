@@ -24,9 +24,9 @@ metadata:                           # Arbitrary key-value extensions
 
 # === OPTIONAL (Platform Extensions) ===
 allowed-tools: Read Grep Glob Bash  # Pre-approved tools (experimental)
-context: fork                       # Claude Code: run in isolated sub-agent
-agent: Explore                      # Claude Code: sub-agent config
-disable-model-invocation: true      # Claude Code: user-only invocation
+context: fork                       # Claude Code: run in isolated sub-agent (Inferred)
+agent: Explore                      # Claude Code: sub-agent config (Inferred)
+disable-model-invocation: true      # Claude Code: user-only invocation (Inferred — not confirmed in public docs)
 ---
 
 # Skill Title
@@ -47,10 +47,10 @@ Concrete usage examples...
 | `license` | `string` | No | agentskills.io | License identifier or filename |
 | `compatibility` | `map` | No | agentskills.io | Environment requirements |
 | `metadata` | `map<str,str>` | No | agentskills.io | Extension key-value pairs |
-| `allowed-tools` | `string` | No | Extension | Space-delimited tool whitelist |
-| `context` | `string` | No | Claude ext. | `"fork"` for isolated execution |
-| `agent` | `string` | No | Claude ext. | Sub-agent config name |
-| `disable-model-invocation` | `bool` | No | Claude ext. | Restrict to user-only invocation |
+| `allowed-tools` | `string` | No | Extension | Space-delimited tool whitelist. Honored by Claude Code; has no documented effect on Cursor, Copilot, or Codex. |
+| `context` | `string` | No | Claude ext. (Inferred) | `"fork"` for isolated execution |
+| `agent` | `string` | No | Claude ext. (Inferred) | Sub-agent config name |
+| `disable-model-invocation` | `bool` | No | Claude ext. (Inferred) | Restrict to user-only invocation. Not confirmed in public Claude Code docs. |
 
 ### Skill Directory
 
@@ -166,6 +166,6 @@ aam test --skill skill-name --case 01-basic  # Run a single test case
 |----------|---------------|--------|
 | Claude Code | `~/.claude/skills/`, `.claude/skills/`, plugin `skills/` | ✅ Full support |
 | Cursor | Plugin `skills/`, imported as agent-decided rules | ✅ Supported (v2.2+) |
-| GitHub Copilot | `.github/skills/`, `.claude/skills/` (also supported), user profile | ✅ Supported |
+| GitHub Copilot | `.github/skills/`, user profile | ⚠️ Preview (not GA) |
 | OpenAI Codex | `~/.codex/skills/`, `.agents/skills/` | ✅ Supported |
 | Amp, Goose, OpenCode, Letta | Various paths | ✅ Supported |
