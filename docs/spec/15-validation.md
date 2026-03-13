@@ -15,6 +15,12 @@
 | Peer dependencies | MUST be satisfied by root or ancestor package |
 | System dependencies | Pre-flight check MUST pass (or explicit `--skip-checks`) |
 | Lock file integrity | Hash MUST match on `--frozen` install |
+| Lock file source metadata | `package.agent.lock` version `2` entries MUST store `source` as an object with required fields for the selected source `type` |
+| Manifest `files` | Entries MUST be relative, use forward slashes, and MUST NOT use negated patterns |
+| Archive completeness | `aam pkg pack` MUST fail if the computed packlist omits a referenced artifact, hook, or MCP file |
+| Dependency groups | `dependencyGroups` keys MUST match `[a-z0-9][a-z0-9-]*` and each group MUST declare at least one of `dependencies` or `systemDependencies` |
+| Extras | `extras` keys MUST match `[a-z0-9][a-z0-9-]*` and each extra MUST declare at least one of `dependencies`, `systemDependencies`, `artifacts`, or `permissions` |
+| Extra artifact refs | `extras.*.artifacts` entries MUST resolve to names declared in the top-level `artifacts` registry |
 | Namespace uniqueness | No two skills with same `name` within a single package |
 | Resolution overrides | `resolutions` entries MUST reference packages in the tree |
 | Resolver version | `resolverVersion` MUST be a positive integer. Unknown versions are a fatal error. |
@@ -38,7 +44,7 @@ The following conditions do not fail validation but MUST produce a `WARN`-level 
 | `network.hosts` contains `*` (bare wildcard) | `⚠ Network host wildcard allows any host. Specify explicit hosts or scoped wildcards (e.g. *.example.com).` |
 | `network.schemes` contains `http` | `⚠ Plain HTTP is declared as an allowed network scheme. Prefer https unless the target endpoint requires it.` |
 
-These warnings MUST be displayed to the user and MUST be included in the output of `aam validate --json` under a `warnings` array. They MUST NOT block installation or publication.
+These warnings MUST be displayed to the user and MUST be included in the output of `aam validate --json` under a `warnings` array. They MUST NOT block installation or publication. When extras are selected during install, the same audit rules MUST be applied to the effective permission set after selected extra permissions are merged.
 
 ### Vendor Extension Validation
 

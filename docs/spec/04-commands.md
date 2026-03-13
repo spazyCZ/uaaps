@@ -77,10 +77,10 @@ Each variable in the `variables` array has:
 
 | Platform | Native Support | Location | Invocation |
 |----------|---------------|----------|------------|
-| Claude Code | ✅ Yes | `commands/` (.md files), `.claude/prompts/` | `/plugin:command` |
+| Claude Code | ✅ Yes | `commands/` (.md files), `.claude/prompts/` | `/package-name:command-name` (e.g. `/code-review:review`) |
 | Cursor | ✅ Prompts / ⚠️ Commands via rules | `.cursor/prompts/` | No native `/command` from plugins |
 | GitHub Copilot | ✅ Yes | `.github/prompts/<name>.prompt.md` | Via prompt picker |
-| Codex | ⚠️ Via skills | Skills with `disable-model-invocation` | `$skill-name` |
+| Codex | ⚠️ Via generated skills | `.agents/skills/cmd-<name>/` | Explicit skill invocation |
 
 ### Command Namespacing & Collision
 
@@ -97,4 +97,4 @@ Plugin/package commands are **always namespaced** as `package-name:command-name`
 Unnamespaced invocation (e.g., `/review`) resolves to the project or personal scope. If neither scope defines the command, the platform SHOULD prompt the user to disambiguate when multiple packages provide a command with that name.
 
 ### Migration Strategy
-For platforms without native command support, commands can be **converted to skills** with `disable-model-invocation: true` to achieve similar user-initiated behavior.
+For platforms without native command support, commands can be **converted to generated skills**. For Codex exports, the generated skill SHOULD include `agents/openai.yaml` with `policy.allow_implicit_invocation: false` so the command remains an explicit user-invoked action rather than a general implicit skill.

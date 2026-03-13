@@ -5,13 +5,14 @@
 3. **Use `allowed-tools`** to restrict skill capabilities where possible.
 4. **Hook commands** run as the user — apply least-privilege principles.
 5. **MCP servers** SHOULD NOT expose secrets; use environment variable injection.
-6. **Environment Variables**: Packages MUST explicitly declare required environment variables in the `env` manifest field. Host platforms SHOULD prompt users securely for these values rather than storing them in plaintext.
-7. **Permissions Model**: The `permissions` field in `package.agent.json` is OPTIONAL. When it is present, platforms MUST enforce it as defined in §17.1 Permissions Model below. A platform that ignores a declared `permissions` field is non-compliant. When the field is absent, platforms MAY apply their own default restrictions.
-8. **Sandbox** untrusted packages before production deployment.
-9. **Verify lock file integrity** — `package.agent.lock` hashes prevent supply-chain tampering.
-10. **Run `aam audit`** regularly to check dependencies for known vulnerabilities.
-11. **System dependency auto-install** never uses `sudo` without explicit `--allow-sudo` flag.
-12. **Transitive dependencies** SHOULD be audited — `aam tree` reveals the full graph.
+6. **Package Contents**: Publishers SHOULD minimize archive contents with the `files` manifest field and review packlist warnings for likely-secret files before publishing.
+7. **Environment Variables**: Packages MUST explicitly declare required environment variables in the `env` manifest field. Host platforms SHOULD prompt users securely for these values rather than storing them in plaintext.
+8. **Permissions Model**: The `permissions` field in `package.agent.json` is OPTIONAL. When it is present, platforms MUST enforce it as defined in §17.1 Permissions Model below. A platform that ignores a declared `permissions` field is non-compliant. When the field is absent, platforms MAY apply their own default restrictions.
+9. **Sandbox** untrusted packages before production deployment.
+10. **Verify lock file integrity** — `package.agent.lock` hashes prevent supply-chain tampering.
+11. **Run `aam audit`** regularly to check dependencies for known vulnerabilities.
+12. **System dependency auto-install** never uses `sudo` without explicit `--allow-sudo` flag.
+13. **Transitive dependencies** SHOULD be audited — `aam tree` reveals the full graph.
 
 ---
 
@@ -110,6 +111,47 @@ $ aam install @myorg/data-exporter
 
 The `aam validate --permissions` flag runs the audit in isolation without a full package validation pass.
 
+#### Extra-selected Permissions
+
+When selected extras declare `permissions`, those declarations extend the root package's permission request for that install.
+
+| Rule | Requirement |
+|------|-------------|
+| Selected extra permissions are unioned with root `permissions` before enforcement | MUST |
+| Unselected extras MUST NOT contribute permissions | MUST |
+| Tools MUST show the permission delta introduced by selected extras at install time | MUST |
+| Platforms MUST audit the effective permission set, not only the base manifest value | MUST |
+
+Example effective request:
+
+```jsonc
+// Base manifest
+{
+  "permissions": {
+    "fs": { "read": ["src/**"] }
+  },
+  "extras": {
+    "github": {
+      "permissions": {
+        "network": {
+          "hosts": ["api.github.com"],
+          "schemes": ["https"]
+        }
+      }
+    }
+  }
+}
+```
+
+Installing with `--extras github` produces an effective root permission request of:
+
+```json
+{
+  "fs": { "read": ["src/**"] },
+  "network": { "hosts": ["api.github.com"], "schemes": ["https"] }
+}
+```
+
 ---
 
 ### 17.2 Threat Model
@@ -183,7 +225,7 @@ When a package depends on other packages, each with their own `permissions` decl
 
 | Rule | Description |
 |------|-------------|
-| **Root authority** | The root package's `permissions` field (the package installed directly by the user) is the maximum permission boundary. No dependency can exceed it. |
+| **Root authority** | The root package's effective permission set (base `permissions` plus selected extra permissions) is the maximum permission boundary. No dependency can exceed it. |
 | **Dependency permissions** | Each dependency's `permissions` are checked against the root's permissions. If a dependency requests a capability not granted by the root, the platform MUST deny it at runtime. |
 | **Absent permissions** | If the root package omits `permissions`, platform defaults apply to the entire dependency tree. If a dependency declares `permissions` but the root does not, the dependency's permissions are advisory only. |
 | **Union within root boundary** | The effective permission set is the union of all dependencies' declared permissions, intersected with the root's permission boundary. |
@@ -221,7 +263,7 @@ If a root package needs to explicitly grant broader permissions to a specific de
 effective(dep) = declared(dep) ∩ (declared(root) ∪ permissionGrants(dep))
 ```
 
-Where `∩` is the intersection (least-privilege) and `∪` is the union of explicit grants. If `declared(dep)` is absent, the dependency inherits the root's permissions boundary.
+Where `∩` is the intersection (least-privilege) and `∪` is the union of explicit grants. `declared(root)` refers to the effective root permission set after selected extra permissions are merged. If `declared(dep)` is absent, the dependency inherits the root's permissions boundary.
 
 #### Example
 

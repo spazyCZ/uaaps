@@ -63,7 +63,11 @@ Hooks execute shell commands at specific points in the agent lifecycle. They run
 | `pre-compact` | `PreCompact` | N/A | N/A | No | Before context compaction |
 | `notification` | `Notification` | N/A | N/A | No | System notification |
 
-> **Copilot hook gaps**: Copilot currently supports 4 hook events vs Claude Code's 10. The `stop`, `post-tool-use`, `permission-request`, `sub-agent-end`, `pre-compact`, and `notification` events have no Copilot equivalent. A community feature request on the Copilot CLI GitHub repository tracks parity efforts.
+> **Copilot hook gaps**: Copilot currently supports 4 hook events vs Claude Code's 10. The `stop`, `post-tool-use`, `permission-request`, `sub-agent-end`, `pre-compact`, and `notification` events have no Copilot equivalent.
+>
+> **Copilot hook confidence — Inferred**: The Copilot event names listed here (`preToolUse`, `userPromptSubmitted`, `sessionStart`, `sessionEnd`) are inferred mappings and do not correspond to a publicly documented `hooks.json`-style API in GitHub Copilot. GitHub Copilot Extensions use a distinct GitHub App webhook mechanism. Treat these event names as aspirational until official documentation confirms them.
+>
+> **Cursor hook confidence — Community**: Cursor hook event names (`beforeShellCommand`, `beforeMcpCall`, `afterFileEdit`, `beforeSubmitPrompt`, `stop`) are documented by the community and are not part of an official public API specification. Treat them as subject to change across Cursor releases.
 
 ### Hook Types
 

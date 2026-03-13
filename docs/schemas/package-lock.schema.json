@@ -8,15 +8,29 @@
   "additionalProperties": false,
   "properties": {
     "lockVersion": {
-      "description": "Lock file format version. Currently always 1.",
+      "description": "Lock file format version. Current version is 2. This schema validates v2 lock files only. Tools SHOULD continue reading version 1 for backward compatibility, but v1 files will not validate against this schema.",
       "type": "integer",
-      "const": 1
+      "const": 2
     },
     "resolved": {
       "description": "Map of resolved package name → resolution entry.",
       "type": "object",
       "additionalProperties": {
         "$ref": "#/$defs/resolvedPackage"
+      }
+    },
+    "groups": {
+      "description": "Selected dependency groups recorded at lock generation time.",
+      "type": "object",
+      "additionalProperties": {
+        "type": "boolean"
+      }
+    },
+    "selectedExtras": {
+      "description": "Selected extras recorded at lock generation time.",
+      "type": "object",
+      "additionalProperties": {
+        "type": "boolean"
       }
     },
     "systemChecks": {
@@ -55,8 +69,8 @@
           "type": "string"
         },
         "source": {
-          "description": "Source descriptor (e.g. 'registry:https://registry.agentpkg.io', 'github:owner/repo#abc123', 'local:./path').",
-          "type": "string"
+          "description": "Structured source descriptor for the resolved artifact.",
+          "$ref": "#/$defs/sourceObject"
         },
         "integrity": {
           "description": "SHA-256 hash of the package archive, prefixed with 'sha256-'.",
@@ -69,6 +83,75 @@
           "additionalProperties": { "type": "string" }
         }
       }
+    },
+    "sourceObject": {
+      "type": "object",
+      "required": ["type"],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["registry", "file", "bundle"]
+        },
+        "registry": {
+          "type": "string",
+          "format": "uri"
+        },
+        "name": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "resolvedTag": {
+          "type": "string"
+        },
+        "tarball": {
+          "type": "string",
+          "format": "uri"
+        },
+        "path": {
+          "type": "string"
+        },
+        "target": {
+          "type": "string"
+        },
+        "display": {
+          "type": "string"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": { "const": "registry" }
+            }
+          },
+          "then": {
+            "required": ["registry", "name", "version", "tarball"]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": { "const": "file" }
+            }
+          },
+          "then": {
+            "required": ["path"]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": { "const": "bundle" }
+            }
+          },
+          "then": {
+            "required": ["path"]
+          }
+        }
+      ]
     }
   }
 }

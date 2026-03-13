@@ -15,14 +15,20 @@ package-name/
 │           ├── fixtures/         #   Test input files
 │           └── cases/            #   Test cases (YAML)
 ├── commands/                     # Slash commands (optional)
-│   └── command-name.md
+│   ├── command-name.md
+│   └── tests/                    #   Deterministic command tests (optional)
+│       ├── test-config.json      #     Test runner config
+│       └── cases/                #     Test cases (YAML)
 ├── agents/                       # Sub-agent definitions (optional)
 │   └── agent-name/
 │       ├── agent.yaml            # Agent definition (name, skills, tools, params)
 │       └── system-prompt.md      # Agent system prompt
 ├── rules/                        # Project rules / instructions (optional)
-│   └── rule-name/
-│       └── RULE.md
+│   ├── rule-name/
+│   │   └── RULE.md
+│   └── group-name/               # Recursive grouping (optional, arbitrary depth)
+│       └── rule-name/
+│           └── RULE.md
 ├── hooks/                        # Lifecycle hooks (optional)
 │   ├── hooks.json                #   Hook definitions
 │   ├── scripts/                  #   Shell scripts referenced by hooks

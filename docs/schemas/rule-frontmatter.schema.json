@@ -1,27 +1,115 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://uaaps.github.io/uaaps_docs/schemas/rule-frontmatter.schema.json",
-  "title": "UAAPS RULE.md Frontmatter",
-  "description": "Schema for the YAML frontmatter block in rules/<name>/RULE.md files.",
+  "title": "UAAPS Rule Frontmatter (UARS)",
+  "description": "Schema for the YAML frontmatter block in .aam/rules/<name>.rule.md files (Universal Agent Rule Specification v1.3).",
   "type": "object",
-  "required": ["description"],
+  "required": ["name", "description", "apply"],
   "additionalProperties": false,
   "properties": {
+    "name": {
+      "description": "Unique slug identifier for the rule (e.g. 'python-standards'). MUST be unique within the package.",
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$"
+    },
+    "version": {
+      "description": "Semver version string for the rule. Defaults to '1.0.0' when omitted.",
+      "type": "string",
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$"
+    },
     "description": {
-      "description": "Purpose of this rule. Used by agents for auto-selection. Be specific about what coding standards or conventions this rule enforces.",
+      "description": "One-line summary of what this rule enforces. Used by Copilot hover tooltips and Cursor agent auto-selection.",
       "type": "string"
     },
-    "globs": {
-      "description": "Glob pattern(s) for automatic attachment. The rule is injected into context whenever a matching file is opened or edited. Example: 'src/**/*.{ts,tsx}'.",
-      "oneOf": [
-        { "type": "string" },
-        { "type": "array", "items": { "type": "string" } }
-      ]
+    "apply": {
+      "description": "Applicability configuration controlling when and where the rule is injected.",
+      "type": "object",
+      "required": ["mode"],
+      "additionalProperties": false,
+      "properties": {
+        "mode": {
+          "description": "Injection mode: 'always' (injected into every session), 'intelligent' (agent decides from description + context), 'files' (injected when matched path is in context), 'manual' (only when explicitly referenced).",
+          "type": "string",
+          "enum": ["always", "intelligent", "files", "manual"]
+        },
+        "globs": {
+          "description": "Glob patterns for file-scoped injection. REQUIRED when mode is 'files'. Patterns are relative to workspace root.",
+          "oneOf": [
+            { "type": "string" },
+            { "type": "array", "items": { "type": "string" }, "minItems": 1 }
+          ]
+        }
+      },
+      "if": {
+        "properties": { "mode": { "const": "files" } }
+      },
+      "then": {
+        "required": ["globs"]
+      }
     },
-    "alwaysApply": {
-      "description": "When true, the rule is always included in context regardless of the files being worked on. Default: false.",
-      "type": "boolean",
-      "default": false
+    "agents": {
+      "description": "Per-platform overrides for features not expressible through the general apply config. Only use for capabilities unique to a given platform.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "copilot": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "description": "When false, no output is emitted for GitHub Copilot.",
+              "type": "boolean"
+            }
+          }
+        },
+        "cursor": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "description": "When false, no output is emitted for Cursor.",
+              "type": "boolean"
+            },
+            "alwaysApply": {
+              "description": "Pin rule as always-on regardless of apply.mode. Cursor-specific feature.",
+              "type": "boolean"
+            },
+            "priority": {
+              "description": "Cursor-specific priority override. Higher values make selection more likely.",
+              "type": "number"
+            }
+          }
+        },
+        "claude": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "description": "When false, no output is emitted for Claude Code.",
+              "type": "boolean"
+            }
+          }
+        },
+        "codex": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "description": "When false, no output is emitted for Codex / AGENTS.md.",
+              "type": "boolean"
+            },
+            "override": {
+              "description": "When true, emits AGENTS.override.md instead of AGENTS.md, fully replacing parent-scope instructions for the target directory. Codex-specific feature.",
+              "type": "boolean"
+            }
+          }
+        }
+      }
+    },
+    "refs": {
+      "description": "Other rule names or template file paths to attach. Maps to Cursor @file references when compiling for Cursor.",
+      "type": "array",
+      "items": { "type": "string" }
     }
   }
 }

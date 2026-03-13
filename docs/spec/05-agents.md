@@ -96,4 +96,4 @@ Provide severity ratings (Critical/High/Medium/Low) with remediation.
 | Claude Code | ✅ Yes (`agents/` dir) | Direct |
 | Cursor | ⚠️ No native `agents/` | Convert `system-prompt.md` → RULE.md with `alwaysApply: true` |
 | GitHub Copilot | ✅ `.github/agents/*.agent.md` | Convert to `.agent.md` |
-| Codex | ⚠️ Via skills | Convert to skill |
+| Codex | ⚠️ Via generated skills | Convert to `.agents/skills/agent-<name>/` |

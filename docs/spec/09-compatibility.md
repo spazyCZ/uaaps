@@ -4,19 +4,19 @@
 
 | Artifact | Claude Code | Cursor | Copilot | Codex | Standard | Confidence |
 |----------|------------|--------|---------|-------|----------|------------|
-| **Skills (SKILL.md)** | ✅ Native | ✅ v2.2+ | ✅ `.github/skills/` | ✅ CLI+App | agentskills.io | Official |
+| **Skills (SKILL.md)** | ✅ Native | ✅ v2.2+ | ⚠️ `.github/skills/` (Preview) | ✅ CLI+App | agentskills.io | Community |
 | **Commands** | ✅ Native | ⚠️ Via rules | ✅ `.prompt.md` | ⚠️ Via skills | Package-defined | Official |
-| **Agents** | ✅ Native (`agents/*.md`) | ⚠️ Via rules | ✅ `.agent.md` | ⚠️ Via skills | Package-defined | Official |
-| **Rules / Instructions** | ✅ `CLAUDE.md` | ✅ `.mdc`/`RULE.md` | ✅ `.instructions.md` | ⚠️ `AGENTS.md` | Package-defined | Official |
-| **AGENTS.md** | ✅ | ✅ | ✅ | ✅ | agents.md | Official |
-| **Hooks** | ✅ 10 events | ✅ 5 events | ✅ 4 events | ❌ | Package-defined | Official |
+| **Agents** | ✅ Native (`agents/<name>/` dir) | ⚠️ Via rules | ✅ `.agent.md` | ⚠️ Via skills | Package-defined | Official |
+| **Rules / Instructions** | ✅ `CLAUDE.md` | ✅ `.cursor/rules/*.mdc` | ✅ `.instructions.md` | ⚠️ `AGENTS.md` | Package-defined | Official |
+| **AGENTS.md** | ✅ | ✅ | ✅† | ✅ | agents.md | Official |
+| **Hooks** | ✅ 10 events | ⚠️ 5 events (Community) | ⚠️ 4 events (Inferred) | ❌ | Package-defined | Mixed |
 | **MCP Servers** | ✅ Native | ✅ Native | ✅ CCA + VS Code | ⚠️ Limited | MCP Protocol | Official |
 
 ### Instruction File Compatibility
 
 | File | Claude Code | Cursor | Copilot | Codex | Jules | Confidence |
 |------|------------|--------|---------|-------|-------|------------|
-| `AGENTS.md` | ✅ | ✅ | ✅ | ✅ | ✅ | Official |
+| `AGENTS.md` | ✅ | ✅ | ✅† | ✅ | ✅ | Official |
 | `CLAUDE.md` | ✅ | ✅* | ❌ | ❌ | ❌ | Official |
 | `GEMINI.md` | ❌ | ✅* | ❌ | ❌ | ❌ | Community |
 | `.cursor/rules/*.mdc` | ❌ | ✅ | ❌ | ❌ | ❌ | Official |
@@ -25,6 +25,8 @@
 | `.github/agents/*.agent.md` | ❌ | ❌ | ✅ | ❌ | ❌ | Official |
 
 > *Cursor reads `CLAUDE.md` and `GEMINI.md` as agent-specific instruction files alongside `AGENTS.md`.
+>
+> †GitHub Copilot reads `AGENTS.md` only in **Copilot Coding Agent** (autonomous agent) mode. Standard Copilot chat does not read this file.
 
 ### GitHub Copilot Artifact Types
 
